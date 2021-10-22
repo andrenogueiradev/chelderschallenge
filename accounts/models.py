@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
-from .validators import validate_CNPJ, validate_CPF, valida_cnpj
+#from django.db.models.fields.related import ManyToManyField
+from .validators import validate_CPF
 from django.core.mail import send_mail
 from django.db import models
 from django.conf import settings
@@ -10,6 +11,7 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from .managers import UserManager
 from rest_framework.authtoken.models import Token
+#from company.models import Company
 
 
 def upload_file_customer(instance, filename):
@@ -17,16 +19,11 @@ def upload_file_customer(instance, filename):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    company_name = models.CharField(max_length=30, blank=True, null=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True, null=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True, null=True)
-    company_id = models.ForeignKey('Company', on_delete=models.CASCADE, null=True)
-    cpf = models.CharField('CPF',unique=True, max_length=14, validators=[validate_CPF], blank=True, null=True)
-    cnpj = models.CharField('CNPJ', max_length=18, validators=[validate_CNPJ, valida_cnpj], blank=True, null=True)
+    #company_id = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True)
+    cpf = models.CharField('CPF',unique=True, validators=[validate_CPF], max_length=14, blank=True, null=True)
     email = models.EmailField(_('email address'), unique=True, blank=True, null=True)
-    status = models.CharField(max_length=30, blank=True, null=True)
-    address = models.CharField(max_length=90, blank=True, null=True)
-    city = models.CharField(max_length=30, blank=True, null=True)
     document = models.FileField(upload_to= 'meusarquivos', blank=False, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(_('active'), default=True)
@@ -84,14 +81,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Simplest possible answer: All admins are staff
         return self.is_admin
 
-        
+       
 class Client(User):
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def create_auth_token(sender, instance=None, created=False, **kwargs):
         if created:
             Token.objects.create(user=instance)
-    pass        
-
-
-class Company(User):
     pass

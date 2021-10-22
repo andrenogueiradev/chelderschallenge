@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_yasg',
     'accounts.apps.AccountsConfig',
+    "company.apps.CompanyConfig",
 ]
 
 REST_FRAMEWORK = {

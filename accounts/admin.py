@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.contrib.admin.decorators import action
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.http import request
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Client, Company
+from .models import Client
 
 
 class UserAdmin(BaseUserAdmin):
@@ -40,14 +42,19 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ['first_name','last_name', 'cpf', 'document', 'email', 'company_id']
-    exclude = ('company_name', 'address', 'city', 'status','cnpj')
+    list_display = ('first_name','last_name', 'cpf', 'document', 'email', 'password', 'is_active', 'is_admin')
 
+    def has_add_permission(self, request):
+        return super().has_add_permission(request)
 
-@admin.register(Company)
-class CompanyAdmin(admin.ModelAdmin):
-    list_display = ['company_name', 'address', 'city', 'status', 'email']    
-    exclude = ('first_name', 'last_name', 'cpf','company_id')
+    def has_change_permission(self, request, obj=None):
+       return False
 
+    def get_list_display_links(self, request, list_display):
+        return [""]
 
-admin.site.register(User, UserAdmin)
+    def get_action(self, request):
+        return super().get_action(action)
+
+    def get_queryset(self, reques):
+        return super().get_queryset(request).filter()
